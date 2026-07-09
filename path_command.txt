@@ -1,0 +1,96 @@
+Folder Structure
+plain
+~/Order-Management-System/
+├── client/          ← React frontend (npm start)
+│   ├── src/
+│   │   ├── store/actions/products-actions.js   ← WE FIXED A BUG HERE
+│   │   ├── utils/api.js                        ← API baseURL: localhost:8000
+│   │   └── ...
+│   └── package.json
+└── server/          ← Laravel backend (php artisan serve)
+    ├── app/
+    │   ├── Models/
+    │   │   ├── Product.php
+    │   │   ├── Image.php
+    │   │   ├── Thumbnail.php
+    │   │   ├── User.php
+    │   │   └── RequestLog.php
+    │   └── Http/Controllers/
+    │       ├── ProductController.php
+    │       ├── AuthController.php
+    │       └── ApiRequestController.php
+    ├── database/
+    │   └── migrations/        ← 10 migration files
+    ├── routes/
+    │   └── api.php            ← API routes
+    ├── .env                   ← DB config + CORS settings
+    └── storage/logs/          ← Laravel error logs
+Commands to Run Everything
+You need THREE terminals open:
+Terminal 1 — MySQL (must be running):
+bash
+sudo systemctl start mysql
+Terminal 2 — Backend (Laravel API):
+bash
+cd ~/Order-Management-System/server
+php artisan serve --host=0.0.0.0 --port=8000
+Terminal 3 — Frontend (React):
+bash
+cd ~/Order-Management-System/client
+npm start
+Then open browser:
+Frontend: http://localhost:3000
+API test: http://localhost:8000/api/products
+What We Fixed
+Table
+#	Problem	Fix
+1	Missing PHP/Composer/MySQL	Installed PHP 8.3, Composer, MySQL server on Ubuntu
+2	Wrong DB credentials in .env	Database was laravel, username laravel_user, password Laravel@12345 — not the order_management we first created
+3	Empty API response []	Products existed but the ProductController::index() does an INNER JOIN with thumbnails table. Products had no thumbnails, so join returned nothing.
+4	No thumbnails in DB	Inserted 5 thumbnail records via Tinker so the product grid would render
+5	No images in DB	Inserted 5 image records via Tinker so the product detail page wouldn't crash with Cannot read properties of undefined (reading 'image')
+6	Frontend showed 0 products	products-actions.js had a dead debug line: axios.get('http://localhost:8000/src/client.php') which threw a 500 error and killed the Redux dispatch. Deleted that line.
+7	CORS config	Added SANCTUM_STATEFUL_DOMAINS, SESSION_DOMAIN, and FRONTEND_URL to .env so React could talk to Laravel
+Current Database State
+Tables: users, products, images, thumbnails, request_logs, failed_jobs, password_resets, personal_access_tokens, migrations
+Products: 5 items (iPhone 14, Nike Shoes, Wireless Headphones, Gaming Mouse, Mechanical Keyboard)
+Users: 0 (auth system ready but no accounts seeded)
+Images/Thumbnails: 5 each (linked to products)
+Quick Health Check Commands
+Before any demo call, run these to confirm everything is alive:
+bash
+# 1. Is MySQL running?
+sudo systemctl status mysql | grep Active
+
+# 2. Is backend responding?
+curl -s http://127.0.0.1:8000/api/products | head -c 100
+
+# 3. Is frontend building?
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+If all three return good output, you're live.
+Screenshot the product grid and the API JSON tab before the call — visual proof is everything.
+king@king-Nitro-ANV15-51:~/Order-Management-System/server$ # 1. Is MySQL running?
+sudo systemctl status mysql | grep Active
+
+# 2. Is backend responding?
+curl -s http://127.0.0.1:8000/api/products | head -c 100
+
+# 3. Is frontend building?
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
+     Active: active (running) since Fri 2026-05-29 15:30:17 EDT; 1h 48min ago
+[{"id":1,"name":"iPhone 14","description":"Apple smartphone","price":"999.00","category":"Electronic200king@king-Nitro-ANV15-51:~/Order-Management-System/server$
+Edit
+Copy
+Share
+Think
+All green. ✅
+MySQL: Running (1h 48min)
+Backend API: Responding with product JSON
+Frontend: HTTP 200 — live and serving
+Your stack is fully operational.
+Before the client call, do this:
+Keep those 3 terminals open — don't close them
+Open localhost:3000 in your browser — product grid should show
+Open localhost:8000/api/products in a second tab — JSON proof
+Have the MySQL terminal command ready to paste and show the database tables
+You've got a working Laravel + React + MySQL full-stack demo. Go get the job.
